@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автосервис RedLine - {% block title %}Главная{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="d-flex flex-column min-vh-100">
+        <!-- Навигация -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <i class="fas fa-car"></i> RedLine AutoService
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}"><i class="fas fa-home"></i> Главная</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('services') }}"><i class="fas fa-wrench"></i> Услуги</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('reviews') }}"><i class="fas fa-star"></i> Отзывы</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> Новости</a></li>
+                        {% if session.user_id %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('orders') }}"><i class="fas fa-shopping-cart"></i> Мои заказы</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Профиль</a></li>
+                            {% if session.role == 'admin' %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Панель администратора</a></li>
+                            {% endif %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Выход</a></li>
+                        {% else %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Вход</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Регистрация</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Flash сообщения -->
+        <div class="container mt-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Основной контент -->
+        <main class="flex-grow-1">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Футер -->
+        <footer class="footer mt-auto">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <h5><i class="fas fa-car"></i> RedLine AutoService</h5>
+                        <p>Профессиональный ремонт и обслуживание автомобилей с 2010 года</p>
+                        <div class="mt-2">
+                            <a href="#" class="text-white me-2"><i class="fab fa-vk fa-lg"></i></a>
+                            <a href="#" class="text-white me-2"><i class="fab fa-instagram fa-lg"></i></a>
+                            <a href="#" class="text-white"><i class="fab fa-telegram fa-lg"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <h5><i class="fas fa-info-circle"></i> Контакты</h5>
+                        <p><i class="fas fa-phone"></i> +7 (999) 123-45-67</p>
+                        <p><i class="fas fa-envelope"></i> info@redline-auto.ru</p>
+                        <p><i class="fas fa-map-marker-alt"></i> г. Москва, ул. Автомобилистов, д. 1</p>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <h5><i class="fas fa-clock"></i> Режим работы</h5>
+                        <p>Пн-Пт: 9:00 - 21:00</p>
+                        <p>Сб: 10:00 - 18:00</p>
+                        <p>Вс: Выходной</p>
+                    </div>
+                </div>
+                <hr class="bg-secondary">
+                <div class="text-center">
+                    <p class="mb-0">&copy; 2024 RedLine AutoService. Все права защищены.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+    .footer {
+        margin-top: 80px !important;
+    }
+</style>
+
+</body>
+</html>

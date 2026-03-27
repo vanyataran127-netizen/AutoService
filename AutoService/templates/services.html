@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.name if service else 'Услуги' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if view == 'detail' and service %}
+        <!-- Детальная страница услуги -->
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-danger">{{ service.name }}</h2>
+                        <p class="card-text">{{ service.description }}</p>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Цена:</strong> {{ service.price }} руб.</p>
+                                <p><strong>Длительность:</strong> {{ service.duration }} мин.</p>
+                                <p><strong>Категория:</strong> {{ service.category }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('booking', service_id=service.id) }}" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-calendar-alt"></i> Записаться
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('services') }}" class="btn btn-outline-primary mt-3">← Назад к услугам</a>
+            </div>
+        </div>
+    {% else %}
+        <!-- Список услуг -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Фильтры</h5>
+                        <form method="GET">
+                            <select name="category" class="form-select mb-2">
+                                <option value="">Все категории</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat[0] }}">{{ cat[0] }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary w-100">Применить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="row row-equal-height">
+                    {% for service in services %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.name }}</h5>
+                                <p class="card-text">{{ service.description[:100] }}{% if service.description|length > 100 %}...{% endif %}</p>
+                                <div class="service-footer">
+                                    <div class="service-price">{{ service.price }} ₽</div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-secondary"><i class="far fa-clock"></i> {{ service.duration }} мин</span>
+                                        <span class="badge bg-danger"><i class="fas fa-tag"></i> {{ service.category }}</span>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-3">
+                                        <a href="{{ url_for('services', id=service.id) }}" class="btn btn-outline-primary flex-grow-1">
+                                            <i class="fas fa-info-circle"></i> Подробнее
+                                        </a>
+                                        <a href="{{ url_for('booking', service_id=service.id) }}" class="btn btn-primary flex-grow-1">
+                                            <i class="fas fa-calendar-alt"></i> Записаться
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

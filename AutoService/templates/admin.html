@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Админ панель{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Боковое меню -->
+        <div class="col-md-2">
+            <div class="list-group">
+                <a href="?section=dashboard" class="list-group-item list-group-item-action bg-dark text-light {% if section == 'dashboard' %}active bg-danger{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Дашборд
+                </a>
+                <a href="?section=users" class="list-group-item list-group-item-action bg-dark text-light {% if section == 'users' or section == 'edit_user' %}active bg-danger{% endif %}">
+                    <i class="fas fa-users"></i> Пользователи
+                </a>
+                <a href="?section=services" class="list-group-item list-group-item-action bg-dark text-light {% if section == 'services' or section == 'edit_service' %}active bg-danger{% endif %}">
+                    <i class="fas fa-wrench"></i> Услуги
+                </a>
+                <a href="?section=orders" class="list-group-item list-group-item-action bg-dark text-light {% if section == 'orders' %}active bg-danger{% endif %}">
+                    <i class="fas fa-shopping-cart"></i> Заказы
+                </a>
+                <a href="?section=reviews" class="list-group-item list-group-item-action bg-dark text-light {% if section == 'reviews' %}active bg-danger{% endif %}">
+                    <i class="fas fa-star"></i> Отзывы
+                </a>
+                <a href="?section=news" class="list-group-item list-group-item-action bg-dark text-light {% if section == 'news' or section == 'edit_news' %}active bg-danger{% endif %}">
+                    <i class="fas fa-newspaper"></i> Новости
+                </a>
+            </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="col-md-10">
+            {% if section == 'dashboard' %}
+                <!-- DASHBOARD -->
+                <h2><i class="fas fa-tachometer-alt"></i> Панель администратора</h2>
+                
+                <div class="row mt-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5>Пользователи</h5>
+                                <h2>{{ stats.total_users }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body">
+                                <h5>Заказы</h5>
+                                <h2>{{ stats.total_orders }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5>Услуги</h5>
+                                <h2>{{ stats.total_services }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5>В обработке</h5>
+                                <h2>{{ stats.pending_orders }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Выручка за месяц</h5>
+                        <h2 class="text-danger">{{ stats.monthly_revenue }} руб.</h2>
+                    </div>
+                </div>
+                
+            {% elif section == 'users' %}
+                <!-- USERS LIST -->
+                <h2><i class="fas fa-users"></i> Пользователи</h2>
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.phone or '-' }}</td>
+                                <td>
+                                    {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger">Админ</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Пользователь</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badge bg-success">Активен</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Неактивен</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="?section=edit_user&id={{ user.id }}" class="btn btn-sm btn-primary">Ред.</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            {% elif section == 'edit_user' and edit_item %}
+                <!-- EDIT USER -->
+                <h2>Редактировать пользователя</h2>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin_action', action='edit', entity='user') }}">
+                            <input type="hidden" name="id" value="{{ edit_item.id }}">
+                            <div class="mb-3">
+                                <label>Имя пользователя</label>
+                                <input type="text" class="form-control" value="{{ edit_item.username }}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label>Email</label>
+                                <input type="email" class="form-control" value="{{ edit_item.email }}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label>Роль</label>
+                                <select name="role" class="form-control">
+                                    <option value="user" {% if edit_item.role == 'user' %}selected{% endif %}>Пользователь</option>
+                                    <option value="admin" {% if edit_item.role == 'admin' %}selected{% endif %}>Администратор</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <input type="checkbox" name="is_active" id="is_active" {% if edit_item.is_active %}checked{% endif %}>
+                                <label for="is_active"> Активен</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                            <a href="?section=users" class="btn btn-secondary">Отмена</a>
+                        </form>
+                    </div>
+                </div>
+                
+            {% elif section == 'services' %}
+                <!-- SERVICES LIST -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2><i class="fas fa-wrench"></i> Услуги</h2>
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                        <i class="fas fa-plus"></i> Добавить услугу
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Цена</th>
+                                <th>Длительность</th>
+                                <th>Категория</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </thead>
+                        <tbody>
+                            {% for s in services %}
+                            <tr>
+                                <td>{{ s.id }}</td>
+                                <td>{{ s.name }}</td>
+                                <td>{{ s.price }} руб.</td>
+                                <td>{{ s.duration }} мин</td>
+                                <td>{{ s.category or '-' }}</td>
+                                <td>
+                                    {% if s.is_active %}
+                                        <span class="badge bg-success">Активна</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Неактивна</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="?section=edit_service&id={{ s.id }}" class="btn btn-sm btn-primary">Ред.</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Modal Add Service -->
+                <div class="modal fade" id="addServiceModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content bg-dark">
+                            <form method="POST" action="{{ url_for('admin_action', action='add', entity='service') }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-danger">Добавить услугу</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label>Название</label>
+                                        <input type="text" name="name" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Описание</label>
+                                        <textarea name="description" class="form-control" rows="3"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label>Цена (руб)</label>
+                                            <input type="number" name="price" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>Длительность (мин)</label>
+                                            <input type="number" name="duration" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Категория</label>
+                                        <input type="text" name="category" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="checkbox" name="is_active" id="is_active" checked>
+                                        <label for="is_active"> Активна</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                    <button type="submit" class="btn btn-danger">Добавить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+            {% elif section == 'edit_service' and edit_item %}
+                <!-- EDIT SERVICE -->
+                <h2>Редактировать услугу</h2>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin_action', action='edit', entity='service') }}">
+                            <input type="hidden" name="id" value="{{ edit_item.id }}">
+                            <div class="mb-3">
+                                <label>Название</label>
+                                <input type="text" name="name" value="{{ edit_item.name }}" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label>Описание</label>
+                                <textarea name="description" class="form-control" rows="3">{{ edit_item.description }}</textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Цена (руб)</label>
+                                    <input type="number" name="price" value="{{ edit_item.price }}" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Длительность (мин)</label>
+                                    <input type="number" name="duration" value="{{ edit_item.duration }}" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Категория</label>
+                                <input type="text" name="category" value="{{ edit_item.category }}" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <input type="checkbox" name="is_active" id="is_active" {% if edit_item.is_active %}checked{% endif %}>
+                                <label for="is_active"> Активна</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                            <a href="?section=services" class="btn btn-secondary">Отмена</a>
+                        </form>
+                    </div>
+                </div>
+                
+            {% elif section == 'orders' %}
+                <!-- ORDERS LIST -->
+                <h2><i class="fas fa-shopping-cart"></i> Заказы</h2>
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Клиент</th>
+                                <th>Услуга</th>
+                                <th>Автомобиль</th>
+                                <th>Дата записи</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.user.username }}</td>
+                                <td>{{ order.service.name }}</td>
+                                <td>{{ order.car_brand }} {{ order.car_model }}</td>
+                                <td>{{ order.appointment_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ order.total_price }} руб.</td>
+                                <td>
+                                    <span class="status-badge status-{{ order.status }}">
+                                        {% if order.status == 'pending' %}В обработке
+                                        {% elif order.status == 'confirmed' %}Подтвержден
+                                        {% elif order.status == 'in_progress' %}Выполняется
+                                        {% elif order.status == 'completed' %}Выполнен
+                                        {% elif order.status == 'cancelled' %}Отменен
+                                        {% else %}{{ order.status }}{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin_action', action='update_status', entity='order') }}" style="display: inline-block;">
+                                        <input type="hidden" name="id" value="{{ order.id }}">
+                                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            <option value="">Изменить статус</option>
+                                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>В обработке</option>
+                                            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Подтвержден</option>
+                                            <option value="in_progress" {% if order.status == 'in_progress' %}selected{% endif %}>Выполняется</option>
+                                            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Выполнен</option>
+                                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Отменен</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            {% elif section == 'reviews' %}
+                <!-- REVIEWS LIST -->
+                <h2><i class="fas fa-star"></i> Отзывы</h2>
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Пользователь</th>
+                                <th>Рейтинг</th>
+                                <th>Отзыв</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </thead>
+                        <tbody>
+                            {% for review in reviews %}
+                            <tr>
+                                <td>{{ review.id }}</td>
+                                <td>{{ review.user.username }}</td>
+                                <td>
+                                    <div class="rating-stars">
+                                        {% for i in range(5) %}
+                                            {% if i < review.rating %}
+                                                <i class="fas fa-star" style="color: #ffc107;"></i>
+                                            {% else %}
+                                                <i class="far fa-star" style="color: #ffc107;"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>{{ review.comment[:80] }}{% if review.comment|length > 80 %}...{% endif %}</td>
+                                <td>{{ review.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    {% if review.is_approved %}
+                                        <span class="badge bg-success">Опубликован</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">На модерации</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not review.is_approved %}
+                                    <form method="POST" action="{{ url_for('admin_action', action='approve', entity='review') }}" style="display: inline-block;">
+                                        <input type="hidden" name="id" value="{{ review.id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('admin_action', action='delete', entity='review') }}" style="display: inline-block;">
+                                        <input type="hidden" name="id" value="{{ review.id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить отзыв?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            {% elif section == 'news' %}
+                <!-- NEWS LIST -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2><i class="fas fa-newspaper"></i> Новости</h2>
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addNewsModal">
+                        <i class="fas fa-plus"></i> Добавить новость
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Заголовок</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </thead>
+                        <tbody>
+                            {% for n in news %}
+                            <tr>
+                                <td>{{ n.id }}</td>
+                                <td>{{ n.title }}</td>
+                                <td>{{ n.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    {% if n.is_published %}
+                                        <span class="badge bg-success">Опубликовано</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Черновик</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="?section=edit_news&id={{ n.id }}" class="btn btn-sm btn-primary">Ред.</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Modal Add News -->
+                <div class="modal fade" id="addNewsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content bg-dark">
+                            <form method="POST" action="{{ url_for('admin_action', action='add', entity='news') }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-danger">Добавить новость</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label>Заголовок</label>
+                                        <input type="text" name="title" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Содержание</label>
+                                        <textarea name="content" class="form-control" rows="5" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="checkbox" name="is_published" id="is_published" checked>
+                                        <label for="is_published"> Опубликовать сразу</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                    <button type="submit" class="btn btn-danger">Добавить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+            {% elif section == 'edit_news' and edit_item %}
+                <!-- EDIT NEWS -->
+                <h2>Редактировать новость</h2>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin_action', action='edit', entity='news') }}">
+                            <input type="hidden" name="id" value="{{ edit_item.id }}">
+                            <div class="mb-3">
+                                <label>Заголовок</label>
+                                <input type="text" name="title" value="{{ edit_item.title }}" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label>Содержание</label>
+                                <textarea name="content" class="form-control" rows="5" required>{{ edit_item.content }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <input type="checkbox" name="is_published" id="is_published" {% if edit_item.is_published %}checked{% endif %}>
+                                <label for="is_published"> Опубликовано</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                            <a href="?section=news" class="btn btn-secondary">Отмена</a>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

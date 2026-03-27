@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Мои заказы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if view == 'booking' and service %}
+        <!-- Форма записи -->
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h4>Запись на услугу: {{ service.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Марка автомобиля *</label>
+                                    <input type="text" name="car_brand" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Модель *</label>
+                                    <input type="text" name="car_model" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Год выпуска</label>
+                                    <input type="number" name="car_year" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Дата и время *</label>
+                                    <input type="datetime-local" name="appointment_date" class="form-control" required>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label>Примечания</label>
+                                    <textarea name="notes" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Оформить заказ</button>
+                                <a href="{{ url_for('services') }}" class="btn btn-secondary">Назад</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    {% elif view == 'detail' and order %}
+        <!-- Детали заказа -->
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h4>Заказ #{{ order.id }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Услуга:</strong> {{ order.service.name }}</p>
+                                <p><strong>Стоимость:</strong> {{ order.total_price }} руб.</p>
+                                <p><strong>Статус:</strong> 
+                                    <span class="status-badge status-{{ order.status }}">
+                                        {% if order.status == 'pending' %}В обработке
+                                        {% elif order.status == 'confirmed' %}Подтвержден
+                                        {% elif order.status == 'in_progress' %}Выполняется
+                                        {% elif order.status == 'completed' %}Выполнен
+                                        {% elif order.status == 'cancelled' %}Отменен
+                                        {% else %}{{ order.status }}{% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Автомобиль:</strong> {{ order.car_brand }} {{ order.car_model }}</p>
+                                <p><strong>Дата записи:</strong> {{ order.appointment_date.strftime('%d.%m.%Y %H:%M') }}</p>
+                                <p><strong>Дата создания:</strong> {{ order.created_at.strftime('%d.%m.%Y') }}</p>
+                            </div>
+                        </div>
+                        {% if order.notes %}
+                            <hr>
+                            <p><strong>Примечания:</strong> {{ order.notes }}</p>
+                        {% endif %}
+                        <div class="d-flex gap-2 mt-3">
+                            {% if order.status in ['pending', 'confirmed'] %}
+                                <a href="{{ url_for('cancel_order', order_id=order.id) }}" class="btn btn-danger" onclick="return confirm('Отменить заказ?')">Отменить заказ</a>
+                            {% endif %}
+                            <a href="{{ url_for('orders') }}" class="btn btn-secondary">Назад к списку</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    {% else %}
+        <!-- Список заказов -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Мои заказы</h2>
+            <select class="form-select w-auto" onchange="location.href='?status='+this.value">
+                <option value="">Все</option>
+                <option value="pending">В обработке</option>
+                <option value="confirmed">Подтверждены</option>
+                <option value="completed">Выполнены</option>
+                <option value="cancelled">Отменены</option>
+            </select>
+        </div>
+        
+        {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Услуга</th>
+                            <th>Дата</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th></th>
+                        </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.service.name }}</td>
+                            <td>{{ order.appointment_date.strftime('%d.%m.%Y') }}</td>
+                            <td>{{ order.total_price }} руб.</td>
+                            <td>
+                                <span class="status-badge status-{{ order.status }}">
+                                    {% if order.status == 'pending' %}В обработке
+                                    {% elif order.status == 'confirmed' %}Подтвержден
+                                    {% elif order.status == 'in_progress' %}Выполняется
+                                    {% elif order.status == 'completed' %}Выполнен
+                                    {% elif order.status == 'cancelled' %}Отменен
+                                    {% else %}{{ order.status }}{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('orders', id=order.id) }}" class="btn btn-sm btn-primary">Детали</a>
+                                    {% if order.status in ['pending', 'confirmed'] %}
+                                        <a href="{{ url_for('cancel_order', order_id=order.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Отменить заказ?')">Отменить</a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">У вас пока нет заказов. <a href="{{ url_for('services') }}">Записаться на услугу</a></div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

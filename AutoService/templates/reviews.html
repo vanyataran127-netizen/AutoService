@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Оставить отзыв{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card" style="background: #2a2a2a; border: 1px solid #8B0000; border-radius: 15px;">
+                <div class="card-header bg-danger text-white text-center" style="border-radius: 14px 14px 0 0;">
+                    <i class="fas fa-star fa-2x mb-2"></i>
+                    <h3 class="mb-0">Оставить отзыв</h3>
+                    <p class="small mb-0 opacity-75">Поделитесь впечатлениями о нашей работе</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label text-danger fw-bold mb-2">
+                                <i class="fas fa-star"></i> Ваша оценка
+                            </label>
+                            <div class="d-flex align-items-center gap-3 p-3" style="background: #1a1a1a; border-radius: 10px;">
+                                <input type="range" id="ratingSlider" name="rating" min="1" max="5" step="1" value="5" 
+                                       style="flex: 1; height: 8px; background: linear-gradient(to right, #ff4444, #ffc107, #28a745); border-radius: 5px;">
+                                <span id="ratingValue" style="font-size: 1.8rem; letter-spacing: 3px; color: #ffc107; min-width: 120px; text-align: center;">★★★★★</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-danger fw-bold mb-2">
+                                <i class="fas fa-pen"></i> Ваш отзыв
+                            </label>
+                            <textarea name="comment" class="form-control" rows="5" 
+                                      style="background: #1a1a1a; border: 1px solid #8B0000; color: #fff; border-radius: 10px;"
+                                      placeholder="Расскажите о своем опыте..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100 py-2" style="border-radius: 10px; font-weight: bold;">
+                            <i class="fas fa-paper-plane me-2"></i> Отправить отзыв
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="text-muted text-decoration-none">
+                    <i class="fas fa-arrow-left"></i> Вернуться на главную
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const slider = document.getElementById('ratingSlider');
+    const ratingValue = document.getElementById('ratingValue');
+    
+    if (slider && ratingValue) {
+        function updateRating(value) {
+            const stars = '★'.repeat(value) + '☆'.repeat(5 - value);
+            ratingValue.innerHTML = stars;
+        }
+        slider.addEventListener('input', function() {
+            updateRating(this.value);
+        });
+        updateRating(slider.value);
+    }
+</script>
+{% endblock %}

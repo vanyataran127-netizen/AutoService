@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<!-- Герой секция -->
+<div class="hero">
+    <div class="container text-center">
+        <h1 class="display-3">RedLine AutoService</h1>
+        <p class="lead">Профессиональный ремонт и обслуживание вашего автомобиля</p>
+        <div class="mt-4">
+            <a href="{{ url_for('services') }}" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-wrench"></i> Наши услуги
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-calendar-alt"></i> Записаться онлайн
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Преимущества -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h2 class="section-title" style="color: #ff4444;">Почему выбирают нас</h2>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-md-3 text-center mb-4">
+            <div class="card h-100 p-3">
+                <i class="fas fa-tools fa-3x text-danger mb-3"></i>
+                <h4>Современное оборудование</h4>
+                <p>Профессиональное диагностическое и ремонтное оборудование последнего поколения</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="card h-100 p-3">
+                <i class="fas fa-user-tie fa-3x text-danger mb-3"></i>
+                <h4>Опытные мастера</h4>
+                <p>Специалисты с многолетним опытом работы и регулярным повышением квалификации</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="card h-100 p-3">
+                <i class="fas fa-clock fa-3x text-danger mb-3"></i>
+                <h4>Быстрое обслуживание</h4>
+                <p>Оперативное выполнение работ в строго оговоренные сроки</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="card h-100 p-3">
+                <i class="fas fa-thumbs-up fa-3x text-danger mb-3"></i>
+                <h4>Гарантия качества</h4>
+                <p>Гарантия на все виды работ и использованные запчасти до 2 лет</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярные услуги -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h2 class="section-title" style="color: #ff4444;">Популярные услуги</h2>
+        </div>
+    </div>
+    
+    <div class="row row-equal-height">
+        {% for service in services %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ service.name }}</h5>
+                    <p class="card-text service-description">{{ service.description[:100] }}{% if service.description|length > 100 %}...{% endif %}</p>
+                    <div class="mt-auto">
+                        <div class="service-price">{{ service.price }} ₽</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-secondary"><i class="far fa-clock"></i> {{ service.duration }} мин</span>
+                            <span class="badge bg-danger"><i class="fas fa-tag"></i> {{ service.category }}</span>
+                        </div>
+                        <a href="{{ url_for('services', id=service.id) }}" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-info-circle"></i> Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mb-5">
+        <a href="{{ url_for('services') }}" class="btn btn-outline-primary">Все услуги →</a>
+    </div>
+
+    <!-- Отзывы клиентов -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h2 class="section-title" style="color: #ff4444;">Отзывы клиентов</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for review in reviews %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="review-stars mb-2">
+                        {% for i in range(5) %}
+                            {% if i < review.rating %}
+                                <i class="fas fa-star" style="color: #ffc107;"></i>
+                            {% else %}
+                                <i class="far fa-star" style="color: #ffc107;"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="card-text">"{{ review.comment[:120] }}{% if review.comment|length > 120 %}...{% endif %}"</p>
+                    <footer class="blockquote-footer mt-2">
+                        <i class="fas fa-user"></i> {{ review.user.username }}
+                        <small class="text-muted ms-2">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
+                    </footer>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not reviews %}
+    <div class="text-center mb-5">
+        <p class="text-muted">Пока нет отзывов. Будьте первым!</p>
+    </div>
+    {% endif %}
+
+    <!-- Новости и акции -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h2 class="section-title" style="color: #ff4444;">Новости и акции</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for item in news %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        <small><i class="far fa-calendar-alt"></i> {{ item.created_at.strftime('%d.%m.%Y') }}</small>
+                    </div>
+                    <h5 class="card-title">{{ item.title }}</h5>
+                    <p class="card-text">{{ item.content[:100] }}{% if item.content|length > 100 %}...{% endif %}</p>
+                    <a href="{{ url_for('news', id=item.id) }}" class="btn btn-link text-danger p-0">
+                        Читать далее <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Призыв к действию -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-danger text-white text-center p-5">
+                <h3 class="mb-3">Готовы обслужить ваш автомобиль?</h3>
+                <p class="lead mb-4">Запишитесь на обслуживание прямо сейчас и получите скидку 10% на первый визит!</p>
+                <div>
+                    <a href="{{ url_for('services') }}" class="btn btn-light btn-lg me-2">Выбрать услугу</a>
+                    <a href="tel:+79991234567" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-phone"></i> Позвонить
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

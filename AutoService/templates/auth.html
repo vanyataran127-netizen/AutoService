@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Вход' if action == 'login' else 'Регистрация' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-{{ 'sign-in-alt' if action == 'login' else 'user-plus' }}"></i>
+                        {{ 'Вход в систему' if action == 'login' else 'Регистрация' }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="registerForm">
+                        {% if action == 'register' %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя пользователя *</label>
+                            <input type="text" class="form-control" id="username" name="username" required minlength="3" maxlength="50">
+                            <small class="text-muted">От 3 до 50 символов</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <small class="text-muted">Введите корректный email адрес</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   placeholder="+7 999 123-45-67">
+                            <small class="text-muted">Пример: +7 999 123-45-67</small>
+                            <div id="phoneError" class="error-message"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль *</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <small class="text-muted">Минимум 8 символов</small>
+                            <div id="passwordStrength" class="password-strength"></div>
+                            <div id="passwordError" class="error-message"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Подтверждение пароля *</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <div id="confirmError" class="error-message"></div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if action == 'login' %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя пользователя</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                            {{ 'Войти' if action == 'login' else 'Зарегистрироваться' }}
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    {% if action == 'login' %}
+                        <a href="{{ url_for('register') }}" class="text-danger">Нет аккаунта? Зарегистрируйтесь</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="text-danger">Уже есть аккаунт? Войдите</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if action == 'register' %}
+<script>
+function validatePhone(phone) {
+    if (!phone) return true;
+    var digits = phone.replace(/\D/g, '');
+    if (digits.length === 11 && (digits[0] === '7' || digits[0] === '8')) {
+        return true;
+    }
+    if (digits.length === 10) {
+        return true;
+    }
+    return false;
+}
+
+function checkPasswordStrength(password) {
+    if (password.length === 0) {
+        return { message: '', color: '' };
+    }
+    var strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 10) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    var message = '';
+    var color = '';
+    if (strength <= 2) {
+        message = 'Слабый пароль';
+        color = '#dc3545';
+    } else if (strength <= 4) {
+        message = 'Средний пароль';
+        color = '#ffc107';
+    } else {
+        message = 'Сильный пароль';
+        color = '#28a745';
+    }
+    return { message: 'Сложность: ' + message, color: color };
+}
+
+function validatePassword(password) {
+    return password.length >= 8;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var phoneInput = document.getElementById('phone');
+    var passwordInput = document.getElementById('password');
+    var confirmInput = document.getElementById('confirm_password');
+    var phoneError = document.getElementById('phoneError');
+    var confirmError = document.getElementById('confirmError');
+    var passwordError = document.getElementById('passwordError');
+    var passwordStrengthDiv = document.getElementById('passwordStrength');
+    var form = document.getElementById('registerForm');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            var value = this.value;
+            if (value && !validatePhone(value)) {
+                phoneError.textContent = 'Введите корректный номер телефона (10 или 11 цифр)';
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else if (value) {
+                phoneError.textContent = '';
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                phoneError.textContent = '';
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+    }
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            var password = this.value;
+            if (password && !validatePassword(password)) {
+                passwordError.textContent = 'Пароль должен содержать минимум 8 символов';
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else if (password) {
+                passwordError.textContent = '';
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                passwordError.textContent = '';
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+            var strength = checkPasswordStrength(password);
+            passwordStrengthDiv.innerHTML = '<small style="color: ' + strength.color + '">' + strength.message + '</small>';
+            if (confirmInput && confirmInput.value) {
+                checkPasswordMatch();
+            }
+        });
+    }
+    
+    function checkPasswordMatch() {
+        var password = passwordInput.value;
+        var confirm = confirmInput.value;
+        if (confirm.length === 0) {
+            confirmError.textContent = '';
+            confirmInput.classList.remove('is-invalid', 'is-valid');
+            return false;
+        }
+        if (password !== confirm) {
+            confirmError.textContent = 'Пароли не совпадают';
+            confirmInput.classList.add('is-invalid');
+            confirmInput.classList.remove('is-valid');
+            return false;
+        } else {
+            confirmError.textContent = '';
+            confirmInput.classList.remove('is-invalid');
+            confirmInput.classList.add('is-valid');
+            return true;
+        }
+    }
+    
+    if (confirmInput) {
+        confirmInput.addEventListener('input', checkPasswordMatch);
+    }
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var isValid = true;
+            if (phoneInput && phoneInput.value) {
+                if (!validatePhone(phoneInput.value)) {
+                    phoneError.textContent = 'Введите корректный номер телефона';
+                    phoneInput.classList.add('is-invalid');
+                    isValid = false;
+                }
+            }
+            var password = passwordInput.value;
+            if (!validatePassword(password)) {
+                passwordError.textContent = 'Пароль должен содержать минимум 8 символов';
+                passwordInput.classList.add('is-invalid');
+                isValid = false;
+            }
+            if (password !== confirmInput.value) {
+                confirmError.textContent = 'Пароли не совпадают';
+                confirmInput.classList.add('is-invalid');
+                isValid = false;
+            }
+            if (!isValid) {
+                e.preventDefault();
+                var firstError = document.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+    }
+    
+    var inputs = ['username', 'email', 'password', 'confirm_password'];
+    for (var i = 0; i < inputs.length; i++) {
+        var id = inputs[i];
+        var input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('blur', function(id) {
+                return function() {
+                    var inp = document.getElementById(id);
+                    if (inp && inp.value) {
+                        if (id === 'password' && !validatePassword(inp.value)) {
+                            inp.classList.add('is-invalid');
+                        } else if (id === 'confirm_password') {
+                            checkPasswordMatch();
+                        } else if (inp.value) {
+                            inp.classList.add('is-valid');
+                        }
+                    }
+                };
+            }(id));
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Запись на услугу{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-alt"></i> Запись на услугу
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle"></i> Вы записываетесь на услугу: 
+                        <strong class="text-danger">{{ service.name }}</strong>
+                        <br>
+                        <small>Стоимость: {{ service.price }} руб. | Длительность: {{ service.duration }} мин</small>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="car_brand" class="form-label">Марка автомобиля *</label>
+                                <input type="text" class="form-control" id="car_brand" name="car_brand" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="car_model" class="form-label">Модель *</label>
+                                <input type="text" class="form-control" id="car_model" name="car_model" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="car_year" class="form-label">Год выпуска</label>
+                                <input type="number" class="form-control" id="car_year" name="car_year" min="1900" max="2025">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="appointment_date" class="form-label">Дата и время *</label>
+                                <input type="datetime-local" class="form-control" id="appointment_date" name="appointment_date" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="notes" class="form-label">Примечания</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Дополнительная информация..."></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-check"></i> Оформить заказ
+                            </button>
+                            <a href="{{ url_for('services') }}" class="btn btn-secondary px-4">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var dateInput = document.getElementById('appointment_date');
+        if (dateInput) {
+            var now = new Date();
+            var year = now.getFullYear();
+            var month = String(now.getMonth() + 1).padStart(2, '0');
+            var day = String(now.getDate()).padStart(2, '0');
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            var minDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+            dateInput.min = minDateTime;
+        }
+    });
+</script>
+{% endblock %}
